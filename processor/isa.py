@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import json
 from collections import namedtuple
 
 from enum import Enum
@@ -45,6 +47,22 @@ class Opcode(str, Enum):
 """Список всех спец символов"""
 correct_words = ["add", "sub", "mul", "div", "mod", "and", "or", "xor", "push", "dup", "drop", "clear", "in", "out", "call", "ret",
                  "swap", "jmp", "jz", "jn", "halt"]
+
+def read_code(filename):
+
+    with open(filename, encoding="utf-8") as file:
+        code = json.loads(file.read())
+
+    for instr in code:
+        # Конвертация строки в Opcode
+        instr["opcode"] = Opcode(instr["opcode"])
+
+        # Конвертация списка term в класс Term
+        if "term" in instr:
+            assert len(instr["term"]) == 3
+            instr["term"] = Term(instr["term"][0], instr["term"][1], instr["term"][2])
+
+    return code
 
 class Term(namedtuple("Term", "line pos symbol")):
     """Описание выражения из исходного текста программы.
