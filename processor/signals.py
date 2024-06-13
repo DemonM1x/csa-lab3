@@ -4,9 +4,10 @@ class Signals:
     LATCH_TOS_FROM_ALU = "latch tos alu out"
     LATCH_TOS_FROM_STACK = "latch tos from stack"
     LATCH_TOS_FROM_PC = "latch tos from pc"
-
+    LATCH_TOS_INPUT = "latch tos input"
     LATCH_ADDR_ARG = "latch addr number"
     LATCH_ADDR_FROM_MEM = "latch addr from mem"
+    LATCH_ADDR_TOS = "latch addr tos"
 
     OPERAND_STACK = "operand stack"
 
@@ -15,5 +16,7 @@ class Signals:
 
     PC_NEXT = "pc next"
     PC_JUMP = "pc jump"
-    PC_JUMP_IF = "pc jump if"
+    PC_JZ = "pc jz"
+    PC_JN = "pc jn"
+    PC_RS = "pc rs"
     PC_TOS = "pc tos"

@@ -33,6 +33,7 @@ class Opcode(str, Enum):
     CALL = "call"
     RET = "ret"
 
+    NOP = "nop"
     SWAP = "swap"
     OVER = "over"
     JMP = "jmp"
