@@ -55,9 +55,9 @@ def read_code(filename):
         code = json.loads(file.read())
 
     for instr in code:
-        # Конвертация строки в Opcode
-        instr["opcode"] = Opcode(instr["opcode"])
-
+        if "opcode" in instr:
+            # Конвертация строки в Opcode
+            instr["opcode"] = Opcode(instr["opcode"])
         # Конвертация списка term в класс Term
         if "term" in instr:
             assert len(instr["term"]) == 3

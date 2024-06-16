@@ -9,6 +9,19 @@ def is_char(word):
     return 0
 
 
+def is_variable(value):
+    return bool(
+        re.fullmatch(
+            r"^[a-zA-Z_][a-zA-Z_0-9]*:\s*((-?\d+)|(\"[^\"]*\")|(\'[^\']*\')|([bB][fF]\s+\d+))$",
+            value,
+        )
+    )
+
+
+def is_str(value):
+    return bool(re.fullmatch(r"^(\".*\")|(\'.*\')$", value))
+
+
 def is_word(word):
     """Проверка на то, что поданный аргумент слово"""
     match = re.search(r'\w+', word)
@@ -24,4 +37,3 @@ def is_num(word):
         return 1
     except ValueError:
         return 0
-
