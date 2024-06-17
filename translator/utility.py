@@ -21,7 +21,10 @@ def is_variable(value):
 def is_str(value):
     return bool(re.fullmatch(r"^(\".*\")|(\'.*\')$", value))
 
-
+def is_int(value):
+    return bool(re.fullmatch(r"^-?\d+$", value))
+def is_bf(value):
+    return bool(re.fullmatch(r"^[bB][fF]\s+\d+$", value))
 def is_word(word):
     """Проверка на то, что поданный аргумент слово"""
     match = re.search(r'\w+', word)

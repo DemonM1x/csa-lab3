@@ -1,25 +1,18 @@
-port:
-        word 1      ; first i/o port
+
 start:
-        push    port        ; [port]
-        load                ; [1]
         in                  ; [len]
         dup                 ; [len, len]
-        push    port        ; [len, len, port]
-        load                ; [len, len, 1]
         out                 ; [len]
         dup                 ; [len, len]
         push    break       ; [len, len, break]
         swap                ; [len, break, len]
         jz                  ; [len]
+        push loop
+        jmp
 loop:
-        push    port        ; [len, port]
-        load                ; [len, 1]
+        dup
         in                  ; [len, chr]
-        push    port        ; [len, chr, port]
-        load                ; [len, chr, 1]
         out                 ; [len]
-
         ; len--, halt if len == 0
         dec                 ; [len--]
         dup                 ; [len, len]

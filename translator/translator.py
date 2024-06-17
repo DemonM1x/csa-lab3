@@ -5,7 +5,8 @@ import sys
 import utility
 from processor.isa import Opcode, Term
 
-
+MIN_INT = -(2**31)
+MAX_INT = 2**31 - 1
 def arithmetic_symbol_to_opcode(symbol):
     return {
         "+": Opcode.ADD,
@@ -55,6 +56,22 @@ def translate_part1(text):
                     for i in range(1, len(value)):
                         pc = len(instructions)
                         instructions.append({"index": pc, "arg": pstr[i], "term": Term(line_num, 0, value[i])})
+                elif utility.is_int(value):
+                    if MIN_INT <= int(value) <= MAX_INT:
+                        labels[name.lower()] = pc
+                        instructions.append({"index": pc, "data": name, "arg": int(value), "term": Term(line_num, 0, token)})
+                elif utility.is_bf(value):
+                    _, size = value.split(maxsplit=1)
+                    if int(size) > 0:
+                        labels[name.lower()] = pc
+                        for d in range(int(size)):
+                            instructions.append({"index": pc, "arg": 0, "term": Term(line_num, 0, token)})
+                            pc = len(instructions)
+
+                    else:
+                        raise Exception(
+                            f"Value {value} out of boundaries on line {line_num}"
+                        )
 
         elif " " in token:
             instruction_parts = token.split()

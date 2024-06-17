@@ -52,20 +52,19 @@ class DataPath:
         self.tos = buses[signal]
 
     def memory_read(self):
-        return self.data_memory[self.address_reg]["arg"]
+        return int(self.data_memory[self.address_reg]["arg"])
 
     def memory_write(self):
-        self.data_memory[self.address_reg] = self.data_stack[-1]
+        self.data_memory[self.address_reg] = {"index": self.tos, "arg": self.data_stack[-1]}
     def port_mapping_io(self, code):
 
         if code == Opcode.IN.value:
             if len(self.input_tokens) == 0:
                 raise EOFError()
-            input_value = self.input_tokens.pop(0)
-            if input_value == '\uFFFF':
+            self.input_token = self.input_tokens.pop(0)
+            if self.input_token == '\uFFFF':
                 raise ValueError("Null input encountered!")
-            logging.info(f"add char '{input_value}' from input buffer")
-            return input_value
+            logging.info(f"add char '{chr(self.input_token)}' from input buffer")
 
         elif code == Opcode.OUT.value:
             if self.data_stack:
@@ -80,8 +79,8 @@ class DataPath:
         self.alu_out = self.tos
         if operation in [Opcode.INC, Opcode.DEC]:
             self.alu_out = self.alu_out + 1 if operation == Opcode.INC else self.alu_out - 1
-        elif left_operand != 0:
-            oper = self.data_stack[-1] if self.data_stack != [] else 0
+        else:
+            oper = int(self.data_stack[-1]) if self.data_stack != [] else 0
             operations = {
                 Opcode.ADD: oper + self.tos,
                 Opcode.SUB: oper - self.tos,
@@ -107,7 +106,7 @@ class ControlUnit:
 
     def tick(self):
         """Продвинуть модельное время процессора вперёд на один такт."""
-        if self._tick < 1000:
+        if self._tick < 2000:
             logging.debug(self)
             if self._tick == 999:
                 logging.info("Cut log due to its size")
@@ -157,6 +156,7 @@ class ControlUnit:
             self.tick()
             self.data_path.signal_stack_pop()
             self.tick()
+            return True
 
         if opcode is Opcode.JZ:
             self.signal_latch_program_counter(Signals.PC_JZ)
@@ -167,7 +167,7 @@ class ControlUnit:
             self.tick()
             self.data_path.signal_stack_pop()
             self.tick()
-
+            return True
         if opcode is Opcode.JN:
             self.signal_latch_program_counter(Signals.PC_JN)
             self.tick()
@@ -177,12 +177,13 @@ class ControlUnit:
             self.tick()
             self.data_path.signal_stack_pop()
             self.tick()
-
+            return True
         if opcode is Opcode.RET:
             self.signal_latch_program_counter(Signals.PC_RS)
             self.tick()
             self.return_stack.pop()
             self.tick()
+            return True
         if opcode is Opcode.CALL:
             self.return_stack.append(self.pc + 1)
             self.tick()
@@ -192,6 +193,9 @@ class ControlUnit:
             self.tick()
             self.data_path.signal_stack_pop()
             self.tick()
+            return True
+        return False
+
 
     def decode_and_execute_instruction(self):
         instr = self.instructions[self.pc]
@@ -202,6 +206,9 @@ class ControlUnit:
         elif opcode in {Opcode.INC, Opcode.DEC, Opcode.ADD, Opcode.SUB, Opcode.MUL, Opcode.DIV, Opcode.MOD}:
             self.data_path.alu(opcode)
             self.tick()
+            if not(opcode in {Opcode.INC, Opcode.DEC}):
+                self.data_path.signal_stack_pop()
+                self.tick()
             self.data_path.signal_latch_tos(Signals.LATCH_TOS_FROM_ALU)
             self.signal_latch_program_counter(Signals.PC_NEXT)
             self.tick()
@@ -221,6 +228,13 @@ class ControlUnit:
             self.data_path.signal_latch_address(Signals.LATCH_ADDR_TOS)
             self.tick()
             self.data_path.memory_write()
+            self.tick()
+            self.data_path.signal_stack_pop()
+            self.tick()
+            self.data_path.signal_latch_tos(Signals.LATCH_TOS_FROM_STACK)
+            self.tick()
+            self.data_path.signal_stack_pop()
+            self.signal_latch_program_counter(Signals.PC_NEXT)
             self.tick()
 
         elif opcode is Opcode.DUP:
@@ -277,6 +291,7 @@ class ControlUnit:
             self.tick()
 
         elif opcode is Opcode.IN:
+            self.data_path.port_mapping_io(opcode)
             self.data_path.signal_latch_tos(Signals.LATCH_TOS_INPUT)
             self.signal_latch_program_counter(Signals.PC_NEXT)
             self.tick()
@@ -292,12 +307,13 @@ class ControlUnit:
 
     def __repr__(self):
         """Вернуть строковое представление состояния процессора."""
-        state_repr = "TICK: {:3} PC: {:3} ADDR: {:3} MEM_OUT: {} DS: {}".format(
+        state_repr = "TICK: {:3} PC: {:3} ADDR: {:3} MEM_OUT: {} DS: {} TOS: {}".format(
             self._tick,
             self.pc,
             self.data_path.address_reg,
             self.data_path.data_memory[self.data_path.address_reg]["arg"],
             self.data_path.data_stack,
+            self.data_path.tos
         )
         instr = self.instructions[self.pc]
         opcode = instr["opcode"]
@@ -349,16 +365,19 @@ def main(code_file, input_file):
     кодом и с входными данными для симуляции.
     """
     code = read_code(code_file)
-    with open(input_file, encoding="utf-8") as file:
-        input_text = file.read()
-        input_token = []
+    input_token = []
+    if not(input_file == ""):
+        with open(input_file, encoding="utf-8") as file:
+            input_text = file.read()
+        input_token = [len(input_text)]
         for char in input_text:
-            input_token.append(char)
+            input_token.append(ord(char))
+
 
     output, instr_counter, ticks = simulation(
         code,
         input_tokens=input_token,
-        data_memory_size=100,
+        data_memory_size=256,
         limit=1000,
     )
 
