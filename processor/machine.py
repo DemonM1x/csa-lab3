@@ -7,7 +7,7 @@ from processor.signals import Signals
 
 
 class DataPath:
-    def __init__(self, code, size, input_tokens):
+    def __init__(self, code, size, input_tokens, io_controller: "IOController"):
         self.data_stack = []
         self.tos = 0
 
@@ -22,6 +22,7 @@ class DataPath:
         self.input_tokens = input_tokens
         self.input_token = 0
         self.output_buffer = []
+        self._io_controller: IOController = io_controller
         self.term = None
         for index, _ in enumerate(code):
             self.data_memory[index] = code[index]
@@ -59,19 +60,12 @@ class DataPath:
     def port_mapping_io(self, code):
 
         if code == Opcode.IN.value:
-            if len(self.input_tokens) == 0:
-                raise EOFError()
-            self.input_token = self.input_tokens.pop(0)
-            if self.input_token == '\uFFFF':
-                raise ValueError("Null input encountered!")
-
+            self.input_token = self._io_controller.read(self.tos)
         elif code == Opcode.OUT.value:
-            if self.data_stack:
-                if 32 <= self.tos <= 127:
-                    output_value = chr(self.tos)
-                else:
-                    output_value = str(self.tos)
-                self.output_buffer.append(output_value)
+            if len(self.data_stack) == 0:
+                raise Exception("Empty data stack")
+            else:
+                self._io_controller.write(self.tos, self.data_stack[-1])
 
     def alu(self, operation=Opcode.ADD):
         self.alu_out = self.tos
@@ -90,11 +84,60 @@ class DataPath:
 
     def zero(self):
         return self.tos == 0
+class IOUnit:
+    def __init__(self, input_buffer: deque[int]):
+        self._input_buffer: deque[int] = input_buffer
+        self._output_buffer: deque[int] = deque()
 
+    def read(self) -> int:
+        return self._input_buffer.popleft()
 
+    def write(self, value: int) -> None:
+        return self._output_buffer.append(value)
+
+    def get_str_output(self) -> str:
+        output: list[str] = []
+        i = 0
+        while i < len(self._output_buffer):
+            length = self._output_buffer[i]
+            if 0 < length <= len(self._output_buffer):
+                for _ in range(length):
+                    output.append(chr(self._output_buffer[i]))
+            else:
+                output.append(str(self._output_buffer[i]))
+            i += 1
+        return "".join(output)
+
+    def get_list_output(self) -> list[int]:
+        return list(self._output_buffer)
+class IOController:
+    def __init__(self) -> None:
+        self._connected_units: dict[int, IOUnit] = {}
+
+    def connect(self, port: int, unit: IOUnit) -> None:
+        self._connected_units[port] = unit
+
+    def disconnect(self, port: int) -> None:
+        self._connected_units.pop(port)
+
+    def read(self, port: int) -> int:
+        if not self._connected_units[port]:
+            raise Exception(f"No device connected to port {port}")
+        return self._connected_units[port].read()
+
+    def write(self, port: int, value: int):
+        if not self._connected_units[port]:
+            raise Exception(f"No device connected to port {port}")
+        if value < 32 or value > 126:
+            logging.debug("Output: writing %d on port %d", value, port)
+        else:
+            logging.debug(
+                "Output: writing `%s` (%d) on port %d", chr(value), value, port
+            )
+        self._connected_units[port].write(value)
 class ControlUnit:
     def __init__(self, instructions, data_path: DataPath):
-        self.instructions = instructions
+        self.instructions = data_path.data_memory
         self.instruction = instructions[0]
         self.instr_count = 1
         self.data_path = data_path
@@ -289,6 +332,8 @@ class ControlUnit:
         elif opcode is Opcode.OUT:
             self.data_path.port_mapping_io(opcode)
             self.tick()
+            self.data_path.signal_stack_pop()
+            self.tick()
             self.data_path.signal_latch_tos(Signals.LATCH_TOS_FROM_STACK)
             self.tick()
             self.data_path.signal_stack_pop()
@@ -317,6 +362,7 @@ class ControlUnit:
 
         return "{} \t{}".format(state_repr, instr_repr)
 
+
 def simulation(code, input_tokens, data_memory_size, limit):
     """Подготовка модели и запуск симуляции процессора.
 
@@ -329,7 +375,10 @@ def simulation(code, input_tokens, data_memory_size, limit):
 
     - инструкцией `Halt`, через исключение `StopIteration`.
     """
-    data_path = DataPath(code, data_memory_size, input_tokens)
+    io_unit = IOUnit(input_buffer=input_tokens)
+    io_controller = IOController()
+    io_controller.connect(port=1, unit=io_unit)
+    data_path = DataPath(code, data_memory_size, input_tokens, io_controller)
     control_unit = ControlUnit(code, data_path)
     instr_counter = 0
 
@@ -346,8 +395,9 @@ def simulation(code, input_tokens, data_memory_size, limit):
 
     if instr_counter >= limit:
         logging.warning("Limit exceeded!")
-    logging.info("output_buffer: %s", repr("".join(data_path.output_buffer)))
-    return "".join(data_path.output_buffer), instr_counter, control_unit.current_tick()
+    io_controller.disconnect(port=1)
+    logging.info("output_buffer: %s", repr(io_unit.get_str_output()))
+    return "".join(io_unit.get_str_output()), instr_counter, control_unit.current_tick()
 
 
 def main(code_file, input_file):
@@ -355,13 +405,12 @@ def main(code_file, input_file):
     кодом и с входными данными для симуляции.
     """
     code = read_code(code_file)
-    input_token = []
+    input_token = deque()
     if not(input_file == ""):
         with open(input_file, encoding="utf-8") as file:
             input_text = file.read()
-        input_token = [len(input_text)]
-        for char in input_text:
-            input_token.append(ord(char))
+        input_token = deque(map(ord, input_text))
+        input_token.appendleft(len(input_token))
 
 
     output, instr_counter, ticks = simulation(

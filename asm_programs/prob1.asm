@@ -1,4 +1,5 @@
 data:
+    port: 1
     result: 0
 start:
     push    1000    ; [i]
@@ -40,5 +41,7 @@ break:
     drop            ; []
     push    result  ; [result_addr]
     load            ; [result]
+    push port
+    load
     out             ; []
     hlt

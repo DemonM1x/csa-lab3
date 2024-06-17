@@ -51,7 +51,7 @@ def translate_part1(text):
                 if utility.is_str(value):
                     pstr = [len(value) - 2] + [ord(c) for c in value[1:-1]]
                     labels[name.lower()] = pc
-                    instructions.append({"index": pc, "data": name, "arg": pstr[0], "term": Term(line_num, 0, token)})
+                    instructions.append({"index": pc, "data": name, "arg": pstr[0], "term": Term(line_num, 0, name + ": " + value[1:-1])})
                     value = value[:-1]
                     for i in range(1, len(value)):
                         pc = len(instructions)
@@ -101,7 +101,6 @@ def translate_part2(labels, instructions):
 
 def write_code(instruction_code, target):
     buf = []
-
     for instr in instruction_code:
         buf.append(json.dumps(instr))
     with open(target, "w") as f:

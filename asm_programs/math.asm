@@ -1,6 +1,7 @@
 ; math
 
 data:
+    port:   1
     a:      3
     b:      -5
     c:      2
@@ -15,5 +16,7 @@ start:
     load
     add
     mul
+    push port
+    load
     out
     hlt

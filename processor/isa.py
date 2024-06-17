@@ -47,7 +47,7 @@ class Opcode(str, Enum):
 
 """Список всех спец символов"""
 correct_words = ["add", "sub", "mul", "div", "mod", "and", "or", "xor", "push", "dup", "drop", "clear", "in", "out", "call", "ret",
-                 "swap", "jmp", "jz", "jn", "halt"]
+                 "swap", "jmp", "jz", "jn", "hlt"]
 
 def read_code(filename):
 

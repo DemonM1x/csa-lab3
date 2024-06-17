@@ -1,4 +1,5 @@
 data:
+    port:       1
     question:   "What is your name? "
     hello:      "Hello, "
     username:   bf  32
@@ -19,6 +20,8 @@ data:
     hlt
 
 print_char: ; (chr)
+    push port
+    load
     out                 ; []
     ret
 
@@ -56,6 +59,8 @@ ps_break:
     ret
 
 read_char:  ; ()
+    push port
+    load
     in                  ; [chr]
     ret
 
@@ -75,7 +80,6 @@ rs_loop:
     swap                ; [len, addr]
     inc                 ; [len, ++addr]
     dup                 ; [len, addr, addr]
-    dup
     push    read_char   ; [len, addr, addr, read_char_addr]
     call                ; [len, addr, addr, chr]
     swap                ; [len, addr, chr, addr]

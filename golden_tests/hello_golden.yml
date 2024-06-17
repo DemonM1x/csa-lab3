@@ -1,0 +1,265 @@
+input: |
+
+source: |-
+ data:
+     hello: "Hello, world!"
+ 
+ start:
+                 push hello          ; hello_addr
+                 load
+                 dup                 ; str_len str_len
+                 out
+                 dup
+                 push exit
+                 swap
+                 jz
+                 push hello
+ 
+ loop:
+     ; out << chr
+     inc                 ; [len, hello_addr++]
+     dup                 ; [len, hello_addr, hello_addr]
+     load                ; [len, hello_addr, chr]
+     out                 ; [len, hello_addr]
+ 
+     ; len--, halt if len == 0
+     swap                ; [hello_addr, len]
+     dec                 ; [hello_addr, len--]
+     dup                 ; [hello_addr, len, len]
+     push    exit       ; [hello_addr, len, len, break]
+     swap                ; [hello_addr, len, break, len]
+     jz                  ; [hello_addr, len]
+ 
+     ; loop
+     swap                ; [len, hello_addr]
+     push    loop        ; [len, hello_addr, loop_addr]
+     jmp                 ; [len, hello_addr]
+ exit:
+                 hlt                ;
+
+
+
+machine: |-
+ [{"index": 0, "opcode": "push", "arg": 16, "term": [1, 0, "push start"]},
+ {"index": 1, "opcode": "jmp", "term": [1, 0, "jmp"]},
+ {"index": 2, "data": "hello", "arg": 13, "term": [3, 0, "hello: \"Hello, world!\""]},
+ {"index": 3, "arg": 72, "term": [3, 0, "H"]},
+ {"index": 4, "arg": 101, "term": [3, 0, "e"]},
+ {"index": 5, "arg": 108, "term": [3, 0, "l"]},
+ {"index": 6, "arg": 108, "term": [3, 0, "l"]},
+ {"index": 7, "arg": 111, "term": [3, 0, "o"]},
+ {"index": 8, "arg": 44, "term": [3, 0, ","]},
+ {"index": 9, "arg": 32, "term": [3, 0, " "]},
+ {"index": 10, "arg": 119, "term": [3, 0, "w"]},
+ {"index": 11, "arg": 111, "term": [3, 0, "o"]},
+ {"index": 12, "arg": 114, "term": [3, 0, "r"]},
+ {"index": 13, "arg": 108, "term": [3, 0, "l"]},
+ {"index": 14, "arg": 100, "term": [3, 0, "d"]},
+ {"index": 15, "arg": 33, "term": [3, 0, "!"]},
+ {"index": 16, "opcode": "push", "arg": 2, "term": [6, 0, "push hello"]},
+ {"index": 17, "opcode": "load", "term": [7, 0, "load"]},
+ {"index": 18, "opcode": "dup", "term": [8, 0, "dup"]},
+ {"index": 19, "opcode": "out", "term": [9, 0, "out"]},
+ {"index": 20, "opcode": "dup", "term": [10, 0, "dup"]},
+ {"index": 21, "opcode": "push", "arg": 38, "term": [11, 0, "push exit"]},
+ {"index": 22, "opcode": "swap", "term": [12, 0, "swap"]},
+ {"index": 23, "opcode": "jz", "term": [13, 0, "jz"]},
+ {"index": 24, "opcode": "push", "arg": 2, "term": [14, 0, "push hello"]},
+ {"index": 25, "opcode": "inc", "term": [18, 0, "inc"]},
+ {"index": 26, "opcode": "dup", "term": [19, 0, "dup"]},
+ {"index": 27, "opcode": "load", "term": [20, 0, "load"]},
+ {"index": 28, "opcode": "out", "term": [21, 0, "out"]},
+ {"index": 29, "opcode": "swap", "term": [24, 0, "swap"]},
+ {"index": 30, "opcode": "dec", "term": [25, 0, "dec"]},
+ {"index": 31, "opcode": "dup", "term": [26, 0, "dup"]},
+ {"index": 32, "opcode": "push", "arg": 38, "term": [27, 0, "push    exit"]},
+ {"index": 33, "opcode": "swap", "term": [28, 0, "swap"]},
+ {"index": 34, "opcode": "jz", "term": [29, 0, "jz"]},
+ {"index": 35, "opcode": "swap", "term": [32, 0, "swap"]},
+ {"index": 36, "opcode": "push", "arg": 25, "term": [33, 0, "push    loop"]},
+ {"index": 37, "opcode": "jmp", "term": [34, 0, "jmp"]},
+ {"index": 38, "opcode": "hlt", "term": [36, 0, "hlt"]}]
+  
+output: |
+  13Hello, world!
+  instr_counter:  177 ticks: 516
+
+out_log: |
+ DEBUG:root:TICK:   0 PC:   0 ADDR:   0 MEM_OUT: 16 DS: [] TOS: 0 	push 16  ('push start'@1:0)
+ DEBUG:root:TICK:   3 PC:   1 ADDR:   0 MEM_OUT: 16 DS: [0] TOS: 16 	jmp  ('jmp'@1:0)
+ DEBUG:root:TICK:   6 PC:  16 ADDR:   0 MEM_OUT: 16 DS: [] TOS: 0 	push 2  ('push hello'@6:0)
+ DEBUG:root:TICK:   9 PC:  17 ADDR:  16 MEM_OUT: 2 DS: [0] TOS: 2 	load  ('load'@7:0)
+ DEBUG:root:TICK:  11 PC:  18 ADDR:   2 MEM_OUT: 13 DS: [0] TOS: 13 	dup  ('dup'@8:0)
+ DEBUG:root:TICK:  13 PC:  19 ADDR:   2 MEM_OUT: 13 DS: [0, 13] TOS: 13 	out  ('out'@9:0)
+ DEBUG:root:TICK:  16 PC:  20 ADDR:   2 MEM_OUT: 13 DS: [0] TOS: 13 	dup  ('dup'@10:0)
+ DEBUG:root:TICK:  18 PC:  21 ADDR:   2 MEM_OUT: 13 DS: [0, 13] TOS: 13 	push 38  ('push exit'@11:0)
+ DEBUG:root:TICK:  21 PC:  22 ADDR:  21 MEM_OUT: 38 DS: [0, 13, 13] TOS: 38 	swap  ('swap'@12:0)
+ DEBUG:root:TICK:  25 PC:  23 ADDR:  21 MEM_OUT: 38 DS: [0, 13, 38] TOS: 13 	jz  ('jz'@13:0)
+ DEBUG:root:TICK:  29 PC:  24 ADDR:  21 MEM_OUT: 38 DS: [0] TOS: 13 	push 2  ('push hello'@14:0)
+ DEBUG:root:TICK:  32 PC:  25 ADDR:  24 MEM_OUT: 2 DS: [0, 13] TOS: 2 	inc  ('inc'@18:0)
+ DEBUG:root:TICK:  34 PC:  26 ADDR:  24 MEM_OUT: 2 DS: [0, 13] TOS: 3 	dup  ('dup'@19:0)
+ DEBUG:root:TICK:  36 PC:  27 ADDR:  24 MEM_OUT: 2 DS: [0, 13, 3] TOS: 3 	load  ('load'@20:0)
+ DEBUG:root:TICK:  38 PC:  28 ADDR:   3 MEM_OUT: 72 DS: [0, 13, 3] TOS: 72 	out  ('out'@21:0)
+ DEBUG:root:TICK:  41 PC:  29 ADDR:   3 MEM_OUT: 72 DS: [0, 13] TOS: 3 	swap  ('swap'@24:0)
+ DEBUG:root:TICK:  45 PC:  30 ADDR:   3 MEM_OUT: 72 DS: [0, 3] TOS: 13 	dec  ('dec'@25:0)
+ DEBUG:root:TICK:  47 PC:  31 ADDR:   3 MEM_OUT: 72 DS: [0, 3] TOS: 12 	dup  ('dup'@26:0)
+ DEBUG:root:TICK:  49 PC:  32 ADDR:   3 MEM_OUT: 72 DS: [0, 3, 12] TOS: 12 	push 38  ('push    exit'@27:0)
+ DEBUG:root:TICK:  52 PC:  33 ADDR:  32 MEM_OUT: 38 DS: [0, 3, 12, 12] TOS: 38 	swap  ('swap'@28:0)
+ DEBUG:root:TICK:  56 PC:  34 ADDR:  32 MEM_OUT: 38 DS: [0, 3, 12, 38] TOS: 12 	jz  ('jz'@29:0)
+ DEBUG:root:TICK:  60 PC:  35 ADDR:  32 MEM_OUT: 38 DS: [0, 3] TOS: 12 	swap  ('swap'@32:0)
+ DEBUG:root:TICK:  64 PC:  36 ADDR:  32 MEM_OUT: 38 DS: [0, 12] TOS: 3 	push 25  ('push    loop'@33:0)
+ DEBUG:root:TICK:  67 PC:  37 ADDR:  36 MEM_OUT: 25 DS: [0, 12, 3] TOS: 25 	jmp  ('jmp'@34:0)
+ DEBUG:root:TICK:  70 PC:  25 ADDR:  36 MEM_OUT: 25 DS: [0, 12] TOS: 3 	inc  ('inc'@18:0)
+ DEBUG:root:TICK:  72 PC:  26 ADDR:  36 MEM_OUT: 25 DS: [0, 12] TOS: 4 	dup  ('dup'@19:0)
+ DEBUG:root:TICK:  74 PC:  27 ADDR:  36 MEM_OUT: 25 DS: [0, 12, 4] TOS: 4 	load  ('load'@20:0)
+ DEBUG:root:TICK:  76 PC:  28 ADDR:   4 MEM_OUT: 101 DS: [0, 12, 4] TOS: 101 	out  ('out'@21:0)
+ DEBUG:root:TICK:  79 PC:  29 ADDR:   4 MEM_OUT: 101 DS: [0, 12] TOS: 4 	swap  ('swap'@24:0)
+ DEBUG:root:TICK:  83 PC:  30 ADDR:   4 MEM_OUT: 101 DS: [0, 4] TOS: 12 	dec  ('dec'@25:0)
+ DEBUG:root:TICK:  85 PC:  31 ADDR:   4 MEM_OUT: 101 DS: [0, 4] TOS: 11 	dup  ('dup'@26:0)
+ DEBUG:root:TICK:  87 PC:  32 ADDR:   4 MEM_OUT: 101 DS: [0, 4, 11] TOS: 11 	push 38  ('push    exit'@27:0)
+ DEBUG:root:TICK:  90 PC:  33 ADDR:  32 MEM_OUT: 38 DS: [0, 4, 11, 11] TOS: 38 	swap  ('swap'@28:0)
+ DEBUG:root:TICK:  94 PC:  34 ADDR:  32 MEM_OUT: 38 DS: [0, 4, 11, 38] TOS: 11 	jz  ('jz'@29:0)
+ DEBUG:root:TICK:  98 PC:  35 ADDR:  32 MEM_OUT: 38 DS: [0, 4] TOS: 11 	swap  ('swap'@32:0)
+ DEBUG:root:TICK: 102 PC:  36 ADDR:  32 MEM_OUT: 38 DS: [0, 11] TOS: 4 	push 25  ('push    loop'@33:0)
+ DEBUG:root:TICK: 105 PC:  37 ADDR:  36 MEM_OUT: 25 DS: [0, 11, 4] TOS: 25 	jmp  ('jmp'@34:0)
+ DEBUG:root:TICK: 108 PC:  25 ADDR:  36 MEM_OUT: 25 DS: [0, 11] TOS: 4 	inc  ('inc'@18:0)
+ DEBUG:root:TICK: 110 PC:  26 ADDR:  36 MEM_OUT: 25 DS: [0, 11] TOS: 5 	dup  ('dup'@19:0)
+ DEBUG:root:TICK: 112 PC:  27 ADDR:  36 MEM_OUT: 25 DS: [0, 11, 5] TOS: 5 	load  ('load'@20:0)
+ DEBUG:root:TICK: 114 PC:  28 ADDR:   5 MEM_OUT: 108 DS: [0, 11, 5] TOS: 108 	out  ('out'@21:0)
+ DEBUG:root:TICK: 117 PC:  29 ADDR:   5 MEM_OUT: 108 DS: [0, 11] TOS: 5 	swap  ('swap'@24:0)
+ DEBUG:root:TICK: 121 PC:  30 ADDR:   5 MEM_OUT: 108 DS: [0, 5] TOS: 11 	dec  ('dec'@25:0)
+ DEBUG:root:TICK: 123 PC:  31 ADDR:   5 MEM_OUT: 108 DS: [0, 5] TOS: 10 	dup  ('dup'@26:0)
+ DEBUG:root:TICK: 125 PC:  32 ADDR:   5 MEM_OUT: 108 DS: [0, 5, 10] TOS: 10 	push 38  ('push    exit'@27:0)
+ DEBUG:root:TICK: 128 PC:  33 ADDR:  32 MEM_OUT: 38 DS: [0, 5, 10, 10] TOS: 38 	swap  ('swap'@28:0)
+ DEBUG:root:TICK: 132 PC:  34 ADDR:  32 MEM_OUT: 38 DS: [0, 5, 10, 38] TOS: 10 	jz  ('jz'@29:0)
+ DEBUG:root:TICK: 136 PC:  35 ADDR:  32 MEM_OUT: 38 DS: [0, 5] TOS: 10 	swap  ('swap'@32:0)
+ DEBUG:root:TICK: 140 PC:  36 ADDR:  32 MEM_OUT: 38 DS: [0, 10] TOS: 5 	push 25  ('push    loop'@33:0)
+ DEBUG:root:TICK: 143 PC:  37 ADDR:  36 MEM_OUT: 25 DS: [0, 10, 5] TOS: 25 	jmp  ('jmp'@34:0)
+ DEBUG:root:TICK: 146 PC:  25 ADDR:  36 MEM_OUT: 25 DS: [0, 10] TOS: 5 	inc  ('inc'@18:0)
+ DEBUG:root:TICK: 148 PC:  26 ADDR:  36 MEM_OUT: 25 DS: [0, 10] TOS: 6 	dup  ('dup'@19:0)
+ DEBUG:root:TICK: 150 PC:  27 ADDR:  36 MEM_OUT: 25 DS: [0, 10, 6] TOS: 6 	load  ('load'@20:0)
+ DEBUG:root:TICK: 152 PC:  28 ADDR:   6 MEM_OUT: 108 DS: [0, 10, 6] TOS: 108 	out  ('out'@21:0)
+ DEBUG:root:TICK: 155 PC:  29 ADDR:   6 MEM_OUT: 108 DS: [0, 10] TOS: 6 	swap  ('swap'@24:0)
+ DEBUG:root:TICK: 159 PC:  30 ADDR:   6 MEM_OUT: 108 DS: [0, 6] TOS: 10 	dec  ('dec'@25:0)
+ DEBUG:root:TICK: 161 PC:  31 ADDR:   6 MEM_OUT: 108 DS: [0, 6] TOS: 9 	dup  ('dup'@26:0)
+ DEBUG:root:TICK: 163 PC:  32 ADDR:   6 MEM_OUT: 108 DS: [0, 6, 9] TOS: 9 	push 38  ('push    exit'@27:0)
+ DEBUG:root:TICK: 166 PC:  33 ADDR:  32 MEM_OUT: 38 DS: [0, 6, 9, 9] TOS: 38 	swap  ('swap'@28:0)
+ DEBUG:root:TICK: 170 PC:  34 ADDR:  32 MEM_OUT: 38 DS: [0, 6, 9, 38] TOS: 9 	jz  ('jz'@29:0)
+ DEBUG:root:TICK: 174 PC:  35 ADDR:  32 MEM_OUT: 38 DS: [0, 6] TOS: 9 	swap  ('swap'@32:0)
+ DEBUG:root:TICK: 178 PC:  36 ADDR:  32 MEM_OUT: 38 DS: [0, 9] TOS: 6 	push 25  ('push    loop'@33:0)
+ DEBUG:root:TICK: 181 PC:  37 ADDR:  36 MEM_OUT: 25 DS: [0, 9, 6] TOS: 25 	jmp  ('jmp'@34:0)
+ DEBUG:root:TICK: 184 PC:  25 ADDR:  36 MEM_OUT: 25 DS: [0, 9] TOS: 6 	inc  ('inc'@18:0)
+ DEBUG:root:TICK: 186 PC:  26 ADDR:  36 MEM_OUT: 25 DS: [0, 9] TOS: 7 	dup  ('dup'@19:0)
+ DEBUG:root:TICK: 188 PC:  27 ADDR:  36 MEM_OUT: 25 DS: [0, 9, 7] TOS: 7 	load  ('load'@20:0)
+ DEBUG:root:TICK: 190 PC:  28 ADDR:   7 MEM_OUT: 111 DS: [0, 9, 7] TOS: 111 	out  ('out'@21:0)
+ DEBUG:root:TICK: 193 PC:  29 ADDR:   7 MEM_OUT: 111 DS: [0, 9] TOS: 7 	swap  ('swap'@24:0)
+ DEBUG:root:TICK: 197 PC:  30 ADDR:   7 MEM_OUT: 111 DS: [0, 7] TOS: 9 	dec  ('dec'@25:0)
+ DEBUG:root:TICK: 199 PC:  31 ADDR:   7 MEM_OUT: 111 DS: [0, 7] TOS: 8 	dup  ('dup'@26:0)
+ DEBUG:root:TICK: 201 PC:  32 ADDR:   7 MEM_OUT: 111 DS: [0, 7, 8] TOS: 8 	push 38  ('push    exit'@27:0)
+ DEBUG:root:TICK: 204 PC:  33 ADDR:  32 MEM_OUT: 38 DS: [0, 7, 8, 8] TOS: 38 	swap  ('swap'@28:0)
+ DEBUG:root:TICK: 208 PC:  34 ADDR:  32 MEM_OUT: 38 DS: [0, 7, 8, 38] TOS: 8 	jz  ('jz'@29:0)
+ DEBUG:root:TICK: 212 PC:  35 ADDR:  32 MEM_OUT: 38 DS: [0, 7] TOS: 8 	swap  ('swap'@32:0)
+ DEBUG:root:TICK: 216 PC:  36 ADDR:  32 MEM_OUT: 38 DS: [0, 8] TOS: 7 	push 25  ('push    loop'@33:0)
+ DEBUG:root:TICK: 219 PC:  37 ADDR:  36 MEM_OUT: 25 DS: [0, 8, 7] TOS: 25 	jmp  ('jmp'@34:0)
+ DEBUG:root:TICK: 222 PC:  25 ADDR:  36 MEM_OUT: 25 DS: [0, 8] TOS: 7 	inc  ('inc'@18:0)
+ DEBUG:root:TICK: 224 PC:  26 ADDR:  36 MEM_OUT: 25 DS: [0, 8] TOS: 8 	dup  ('dup'@19:0)
+ DEBUG:root:TICK: 226 PC:  27 ADDR:  36 MEM_OUT: 25 DS: [0, 8, 8] TOS: 8 	load  ('load'@20:0)
+ DEBUG:root:TICK: 228 PC:  28 ADDR:   8 MEM_OUT: 44 DS: [0, 8, 8] TOS: 44 	out  ('out'@21:0)
+ DEBUG:root:TICK: 231 PC:  29 ADDR:   8 MEM_OUT: 44 DS: [0, 8] TOS: 8 	swap  ('swap'@24:0)
+ DEBUG:root:TICK: 235 PC:  30 ADDR:   8 MEM_OUT: 44 DS: [0, 8] TOS: 8 	dec  ('dec'@25:0)
+ DEBUG:root:TICK: 237 PC:  31 ADDR:   8 MEM_OUT: 44 DS: [0, 8] TOS: 7 	dup  ('dup'@26:0)
+ DEBUG:root:TICK: 239 PC:  32 ADDR:   8 MEM_OUT: 44 DS: [0, 8, 7] TOS: 7 	push 38  ('push    exit'@27:0)
+ DEBUG:root:TICK: 242 PC:  33 ADDR:  32 MEM_OUT: 38 DS: [0, 8, 7, 7] TOS: 38 	swap  ('swap'@28:0)
+ DEBUG:root:TICK: 246 PC:  34 ADDR:  32 MEM_OUT: 38 DS: [0, 8, 7, 38] TOS: 7 	jz  ('jz'@29:0)
+ DEBUG:root:TICK: 250 PC:  35 ADDR:  32 MEM_OUT: 38 DS: [0, 8] TOS: 7 	swap  ('swap'@32:0)
+ DEBUG:root:TICK: 254 PC:  36 ADDR:  32 MEM_OUT: 38 DS: [0, 7] TOS: 8 	push 25  ('push    loop'@33:0)
+ DEBUG:root:TICK: 257 PC:  37 ADDR:  36 MEM_OUT: 25 DS: [0, 7, 8] TOS: 25 	jmp  ('jmp'@34:0)
+ DEBUG:root:TICK: 260 PC:  25 ADDR:  36 MEM_OUT: 25 DS: [0, 7] TOS: 8 	inc  ('inc'@18:0)
+ DEBUG:root:TICK: 262 PC:  26 ADDR:  36 MEM_OUT: 25 DS: [0, 7] TOS: 9 	dup  ('dup'@19:0)
+ DEBUG:root:TICK: 264 PC:  27 ADDR:  36 MEM_OUT: 25 DS: [0, 7, 9] TOS: 9 	load  ('load'@20:0)
+ DEBUG:root:TICK: 266 PC:  28 ADDR:   9 MEM_OUT: 32 DS: [0, 7, 9] TOS: 32 	out  ('out'@21:0)
+ DEBUG:root:TICK: 269 PC:  29 ADDR:   9 MEM_OUT: 32 DS: [0, 7] TOS: 9 	swap  ('swap'@24:0)
+ DEBUG:root:TICK: 273 PC:  30 ADDR:   9 MEM_OUT: 32 DS: [0, 9] TOS: 7 	dec  ('dec'@25:0)
+ DEBUG:root:TICK: 275 PC:  31 ADDR:   9 MEM_OUT: 32 DS: [0, 9] TOS: 6 	dup  ('dup'@26:0)
+ DEBUG:root:TICK: 277 PC:  32 ADDR:   9 MEM_OUT: 32 DS: [0, 9, 6] TOS: 6 	push 38  ('push    exit'@27:0)
+ DEBUG:root:TICK: 280 PC:  33 ADDR:  32 MEM_OUT: 38 DS: [0, 9, 6, 6] TOS: 38 	swap  ('swap'@28:0)
+ DEBUG:root:TICK: 284 PC:  34 ADDR:  32 MEM_OUT: 38 DS: [0, 9, 6, 38] TOS: 6 	jz  ('jz'@29:0)
+ DEBUG:root:TICK: 288 PC:  35 ADDR:  32 MEM_OUT: 38 DS: [0, 9] TOS: 6 	swap  ('swap'@32:0)
+ DEBUG:root:TICK: 292 PC:  36 ADDR:  32 MEM_OUT: 38 DS: [0, 6] TOS: 9 	push 25  ('push    loop'@33:0)
+ DEBUG:root:TICK: 295 PC:  37 ADDR:  36 MEM_OUT: 25 DS: [0, 6, 9] TOS: 25 	jmp  ('jmp'@34:0)
+ DEBUG:root:TICK: 298 PC:  25 ADDR:  36 MEM_OUT: 25 DS: [0, 6] TOS: 9 	inc  ('inc'@18:0)
+ DEBUG:root:TICK: 300 PC:  26 ADDR:  36 MEM_OUT: 25 DS: [0, 6] TOS: 10 	dup  ('dup'@19:0)
+ DEBUG:root:TICK: 302 PC:  27 ADDR:  36 MEM_OUT: 25 DS: [0, 6, 10] TOS: 10 	load  ('load'@20:0)
+ DEBUG:root:TICK: 304 PC:  28 ADDR:  10 MEM_OUT: 119 DS: [0, 6, 10] TOS: 119 	out  ('out'@21:0)
+ DEBUG:root:TICK: 307 PC:  29 ADDR:  10 MEM_OUT: 119 DS: [0, 6] TOS: 10 	swap  ('swap'@24:0)
+ DEBUG:root:TICK: 311 PC:  30 ADDR:  10 MEM_OUT: 119 DS: [0, 10] TOS: 6 	dec  ('dec'@25:0)
+ DEBUG:root:TICK: 313 PC:  31 ADDR:  10 MEM_OUT: 119 DS: [0, 10] TOS: 5 	dup  ('dup'@26:0)
+ DEBUG:root:TICK: 315 PC:  32 ADDR:  10 MEM_OUT: 119 DS: [0, 10, 5] TOS: 5 	push 38  ('push    exit'@27:0)
+ DEBUG:root:TICK: 318 PC:  33 ADDR:  32 MEM_OUT: 38 DS: [0, 10, 5, 5] TOS: 38 	swap  ('swap'@28:0)
+ DEBUG:root:TICK: 322 PC:  34 ADDR:  32 MEM_OUT: 38 DS: [0, 10, 5, 38] TOS: 5 	jz  ('jz'@29:0)
+ DEBUG:root:TICK: 326 PC:  35 ADDR:  32 MEM_OUT: 38 DS: [0, 10] TOS: 5 	swap  ('swap'@32:0)
+ DEBUG:root:TICK: 330 PC:  36 ADDR:  32 MEM_OUT: 38 DS: [0, 5] TOS: 10 	push 25  ('push    loop'@33:0)
+ DEBUG:root:TICK: 333 PC:  37 ADDR:  36 MEM_OUT: 25 DS: [0, 5, 10] TOS: 25 	jmp  ('jmp'@34:0)
+ DEBUG:root:TICK: 336 PC:  25 ADDR:  36 MEM_OUT: 25 DS: [0, 5] TOS: 10 	inc  ('inc'@18:0)
+ DEBUG:root:TICK: 338 PC:  26 ADDR:  36 MEM_OUT: 25 DS: [0, 5] TOS: 11 	dup  ('dup'@19:0)
+ DEBUG:root:TICK: 340 PC:  27 ADDR:  36 MEM_OUT: 25 DS: [0, 5, 11] TOS: 11 	load  ('load'@20:0)
+ DEBUG:root:TICK: 342 PC:  28 ADDR:  11 MEM_OUT: 111 DS: [0, 5, 11] TOS: 111 	out  ('out'@21:0)
+ DEBUG:root:TICK: 345 PC:  29 ADDR:  11 MEM_OUT: 111 DS: [0, 5] TOS: 11 	swap  ('swap'@24:0)
+ DEBUG:root:TICK: 349 PC:  30 ADDR:  11 MEM_OUT: 111 DS: [0, 11] TOS: 5 	dec  ('dec'@25:0)
+ DEBUG:root:TICK: 351 PC:  31 ADDR:  11 MEM_OUT: 111 DS: [0, 11] TOS: 4 	dup  ('dup'@26:0)
+ DEBUG:root:TICK: 353 PC:  32 ADDR:  11 MEM_OUT: 111 DS: [0, 11, 4] TOS: 4 	push 38  ('push    exit'@27:0)
+ DEBUG:root:TICK: 356 PC:  33 ADDR:  32 MEM_OUT: 38 DS: [0, 11, 4, 4] TOS: 38 	swap  ('swap'@28:0)
+ DEBUG:root:TICK: 360 PC:  34 ADDR:  32 MEM_OUT: 38 DS: [0, 11, 4, 38] TOS: 4 	jz  ('jz'@29:0)
+ DEBUG:root:TICK: 364 PC:  35 ADDR:  32 MEM_OUT: 38 DS: [0, 11] TOS: 4 	swap  ('swap'@32:0)
+ DEBUG:root:TICK: 368 PC:  36 ADDR:  32 MEM_OUT: 38 DS: [0, 4] TOS: 11 	push 25  ('push    loop'@33:0)
+ DEBUG:root:TICK: 371 PC:  37 ADDR:  36 MEM_OUT: 25 DS: [0, 4, 11] TOS: 25 	jmp  ('jmp'@34:0)
+ DEBUG:root:TICK: 374 PC:  25 ADDR:  36 MEM_OUT: 25 DS: [0, 4] TOS: 11 	inc  ('inc'@18:0)
+ DEBUG:root:TICK: 376 PC:  26 ADDR:  36 MEM_OUT: 25 DS: [0, 4] TOS: 12 	dup  ('dup'@19:0)
+ DEBUG:root:TICK: 378 PC:  27 ADDR:  36 MEM_OUT: 25 DS: [0, 4, 12] TOS: 12 	load  ('load'@20:0)
+ DEBUG:root:TICK: 380 PC:  28 ADDR:  12 MEM_OUT: 114 DS: [0, 4, 12] TOS: 114 	out  ('out'@21:0)
+ DEBUG:root:TICK: 383 PC:  29 ADDR:  12 MEM_OUT: 114 DS: [0, 4] TOS: 12 	swap  ('swap'@24:0)
+ DEBUG:root:TICK: 387 PC:  30 ADDR:  12 MEM_OUT: 114 DS: [0, 12] TOS: 4 	dec  ('dec'@25:0)
+ DEBUG:root:TICK: 389 PC:  31 ADDR:  12 MEM_OUT: 114 DS: [0, 12] TOS: 3 	dup  ('dup'@26:0)
+ DEBUG:root:TICK: 391 PC:  32 ADDR:  12 MEM_OUT: 114 DS: [0, 12, 3] TOS: 3 	push 38  ('push    exit'@27:0)
+ DEBUG:root:TICK: 394 PC:  33 ADDR:  32 MEM_OUT: 38 DS: [0, 12, 3, 3] TOS: 38 	swap  ('swap'@28:0)
+ DEBUG:root:TICK: 398 PC:  34 ADDR:  32 MEM_OUT: 38 DS: [0, 12, 3, 38] TOS: 3 	jz  ('jz'@29:0)
+ DEBUG:root:TICK: 402 PC:  35 ADDR:  32 MEM_OUT: 38 DS: [0, 12] TOS: 3 	swap  ('swap'@32:0)
+ DEBUG:root:TICK: 406 PC:  36 ADDR:  32 MEM_OUT: 38 DS: [0, 3] TOS: 12 	push 25  ('push    loop'@33:0)
+ DEBUG:root:TICK: 409 PC:  37 ADDR:  36 MEM_OUT: 25 DS: [0, 3, 12] TOS: 25 	jmp  ('jmp'@34:0)
+ DEBUG:root:TICK: 412 PC:  25 ADDR:  36 MEM_OUT: 25 DS: [0, 3] TOS: 12 	inc  ('inc'@18:0)
+ DEBUG:root:TICK: 414 PC:  26 ADDR:  36 MEM_OUT: 25 DS: [0, 3] TOS: 13 	dup  ('dup'@19:0)
+ DEBUG:root:TICK: 416 PC:  27 ADDR:  36 MEM_OUT: 25 DS: [0, 3, 13] TOS: 13 	load  ('load'@20:0)
+ DEBUG:root:TICK: 418 PC:  28 ADDR:  13 MEM_OUT: 108 DS: [0, 3, 13] TOS: 108 	out  ('out'@21:0)
+ DEBUG:root:TICK: 421 PC:  29 ADDR:  13 MEM_OUT: 108 DS: [0, 3] TOS: 13 	swap  ('swap'@24:0)
+ DEBUG:root:TICK: 425 PC:  30 ADDR:  13 MEM_OUT: 108 DS: [0, 13] TOS: 3 	dec  ('dec'@25:0)
+ DEBUG:root:TICK: 427 PC:  31 ADDR:  13 MEM_OUT: 108 DS: [0, 13] TOS: 2 	dup  ('dup'@26:0)
+ DEBUG:root:TICK: 429 PC:  32 ADDR:  13 MEM_OUT: 108 DS: [0, 13, 2] TOS: 2 	push 38  ('push    exit'@27:0)
+ DEBUG:root:TICK: 432 PC:  33 ADDR:  32 MEM_OUT: 38 DS: [0, 13, 2, 2] TOS: 38 	swap  ('swap'@28:0)
+ DEBUG:root:TICK: 436 PC:  34 ADDR:  32 MEM_OUT: 38 DS: [0, 13, 2, 38] TOS: 2 	jz  ('jz'@29:0)
+ DEBUG:root:TICK: 440 PC:  35 ADDR:  32 MEM_OUT: 38 DS: [0, 13] TOS: 2 	swap  ('swap'@32:0)
+ DEBUG:root:TICK: 444 PC:  36 ADDR:  32 MEM_OUT: 38 DS: [0, 2] TOS: 13 	push 25  ('push    loop'@33:0)
+ DEBUG:root:TICK: 447 PC:  37 ADDR:  36 MEM_OUT: 25 DS: [0, 2, 13] TOS: 25 	jmp  ('jmp'@34:0)
+ DEBUG:root:TICK: 450 PC:  25 ADDR:  36 MEM_OUT: 25 DS: [0, 2] TOS: 13 	inc  ('inc'@18:0)
+ DEBUG:root:TICK: 452 PC:  26 ADDR:  36 MEM_OUT: 25 DS: [0, 2] TOS: 14 	dup  ('dup'@19:0)
+ DEBUG:root:TICK: 454 PC:  27 ADDR:  36 MEM_OUT: 25 DS: [0, 2, 14] TOS: 14 	load  ('load'@20:0)
+ DEBUG:root:TICK: 456 PC:  28 ADDR:  14 MEM_OUT: 100 DS: [0, 2, 14] TOS: 100 	out  ('out'@21:0)
+ DEBUG:root:TICK: 459 PC:  29 ADDR:  14 MEM_OUT: 100 DS: [0, 2] TOS: 14 	swap  ('swap'@24:0)
+ DEBUG:root:TICK: 463 PC:  30 ADDR:  14 MEM_OUT: 100 DS: [0, 14] TOS: 2 	dec  ('dec'@25:0)
+ DEBUG:root:TICK: 465 PC:  31 ADDR:  14 MEM_OUT: 100 DS: [0, 14] TOS: 1 	dup  ('dup'@26:0)
+ DEBUG:root:TICK: 467 PC:  32 ADDR:  14 MEM_OUT: 100 DS: [0, 14, 1] TOS: 1 	push 38  ('push    exit'@27:0)
+ DEBUG:root:TICK: 470 PC:  33 ADDR:  32 MEM_OUT: 38 DS: [0, 14, 1, 1] TOS: 38 	swap  ('swap'@28:0)
+ DEBUG:root:TICK: 474 PC:  34 ADDR:  32 MEM_OUT: 38 DS: [0, 14, 1, 38] TOS: 1 	jz  ('jz'@29:0)
+ DEBUG:root:TICK: 478 PC:  35 ADDR:  32 MEM_OUT: 38 DS: [0, 14] TOS: 1 	swap  ('swap'@32:0)
+ DEBUG:root:TICK: 482 PC:  36 ADDR:  32 MEM_OUT: 38 DS: [0, 1] TOS: 14 	push 25  ('push    loop'@33:0)
+ DEBUG:root:TICK: 485 PC:  37 ADDR:  36 MEM_OUT: 25 DS: [0, 1, 14] TOS: 25 	jmp  ('jmp'@34:0)
+ DEBUG:root:TICK: 488 PC:  25 ADDR:  36 MEM_OUT: 25 DS: [0, 1] TOS: 14 	inc  ('inc'@18:0)
+ DEBUG:root:TICK: 490 PC:  26 ADDR:  36 MEM_OUT: 25 DS: [0, 1] TOS: 15 	dup  ('dup'@19:0)
+ DEBUG:root:TICK: 492 PC:  27 ADDR:  36 MEM_OUT: 25 DS: [0, 1, 15] TOS: 15 	load  ('load'@20:0)
+ DEBUG:root:TICK: 494 PC:  28 ADDR:  15 MEM_OUT: 33 DS: [0, 1, 15] TOS: 33 	out  ('out'@21:0)
+ DEBUG:root:TICK: 497 PC:  29 ADDR:  15 MEM_OUT: 33 DS: [0, 1] TOS: 15 	swap  ('swap'@24:0)
+ DEBUG:root:TICK: 501 PC:  30 ADDR:  15 MEM_OUT: 33 DS: [0, 15] TOS: 1 	dec  ('dec'@25:0)
+ DEBUG:root:TICK: 503 PC:  31 ADDR:  15 MEM_OUT: 33 DS: [0, 15] TOS: 0 	dup  ('dup'@26:0)
+ DEBUG:root:TICK: 505 PC:  32 ADDR:  15 MEM_OUT: 33 DS: [0, 15, 0] TOS: 0 	push 38  ('push    exit'@27:0)
+ DEBUG:root:TICK: 508 PC:  33 ADDR:  32 MEM_OUT: 38 DS: [0, 15, 0, 0] TOS: 38 	swap  ('swap'@28:0)
+ DEBUG:root:TICK: 512 PC:  34 ADDR:  32 MEM_OUT: 38 DS: [0, 15, 0, 38] TOS: 0 	jz  ('jz'@29:0)
+ DEBUG:root:TICK: 516 PC:  38 ADDR:  32 MEM_OUT: 38 DS: [0, 15] TOS: 0 	hlt  ('hlt'@36:0)
