@@ -64,7 +64,6 @@ class DataPath:
             self.input_token = self.input_tokens.pop(0)
             if self.input_token == '\uFFFF':
                 raise ValueError("Null input encountered!")
-            logging.info(f"add char '{chr(self.input_token)}' from input buffer")
 
         elif code == Opcode.OUT.value:
             if self.data_stack:
@@ -72,10 +71,9 @@ class DataPath:
                     output_value = chr(self.tos)
                 else:
                     output_value = str(self.tos)
-                logging.info(f"add char '{output_value}' to output buffer")
                 self.output_buffer.append(output_value)
 
-    def alu(self, operation=Opcode.ADD, left_operand=0):
+    def alu(self, operation=Opcode.ADD):
         self.alu_out = self.tos
         if operation in [Opcode.INC, Opcode.DEC]:
             self.alu_out = self.alu_out + 1 if operation == Opcode.INC else self.alu_out - 1
@@ -106,10 +104,6 @@ class ControlUnit:
 
     def tick(self):
         """Продвинуть модельное время процессора вперёд на один такт."""
-        if self._tick < 2000:
-            logging.debug(self)
-            if self._tick == 999:
-                logging.info("Cut log due to its size")
         self._tick += 1
 
 
@@ -119,10 +113,6 @@ class ControlUnit:
         return self._tick
 
     def signal_latch_program_counter(self, signal):
-        self.instruction = self.instructions[self.pc]
-        self.data_path.term = self.instruction["term"]
-        self.data_path.arg_tos = self.instruction["arg"] if "arg" in self.instruction else 0
-        self.data_path.arg_address = self.instruction["arg"] if "arg" in self.instruction else 0
         if signal == Signals.PC_JZ:
             if self.data_path.zero():
                 self.pc = self.data_path.data_stack[-1]
@@ -378,7 +368,7 @@ def main(code_file, input_file):
         code,
         input_tokens=input_token,
         data_memory_size=256,
-        limit=1000,
+        limit=30000,
     )
 
     print("".join(output))

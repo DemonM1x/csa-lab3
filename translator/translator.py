@@ -89,8 +89,8 @@ def translate_part1(text):
 def translate_part2(labels, instructions):
     for instruction in instructions:
         if "arg" in instruction and "opcode" in instruction:
-            label = instruction["arg"]
-            if not (instruction == instructions[0]):
+            label = str(instruction["arg"])
+            if not (label.isdigit()):
                 assert label in labels, "Label not defined: " + label
                 instruction["arg"] = labels[label]
 

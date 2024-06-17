@@ -8,12 +8,9 @@ loop:
     push    break   ; [i, i, break_addr]
     swap            ; [i, break_addr, i]
     jz              ; [i]
-
     dup             ; [i, i]
-
     dup             ; [i, i, i]
     push    3       ; [i, i, i, 3]
-    swap            ; [i, i, 3, i]
     mod             ; [i, i, mod]
     push    suc     ; [i, i, mod, suc_addr]
     swap            ; [i, i, suc_addr, mod]
@@ -21,13 +18,12 @@ loop:
 
     dup             ; [i, i, i]
     push    5       ; [i, i, i, 5]
-    swap            ; [i, i, 5, i]
     mod             ; [i, i, mod]
     push    suc     ; [i, i, mod, suc_addr]
     swap            ; [i, i, suc_addr, mod]
     jz              ; [i, i]
 
-    pop             ; [i]
+    drop             ; [i]
     push    loop    ; [i, loop_addr]
     jmp             ; [i]
 
