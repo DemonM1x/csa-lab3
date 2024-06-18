@@ -1,29 +1,33 @@
 import json
 import logging
-import sys
+from collections import deque
+from processor.machine import DataPath, ControlUnit, IOUnit, IOController
 from processor.isa import read_code
-from processor.machine import DataPath, ControlUnit, simulation
 
 
 def main(code_file, input_file):
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
-    instructions = read_code(code_file)
-    if not(input_file == ""):
-        with open(input_file, "r") as file:
-            input_tokens = file.readline()
-            input_tokens = list(input_tokens)
-            input_tokens.append("\x00")
-    data_path = DataPath(instructions, 256, input_tokens)
-    control_unit = ControlUnit(instructions, data_path)
-    out, ticks, instr_count = simulation(instructions, input_tokens, 256, 3000)
+    with open(code_file, "r") as file:
+        instructions = json.load(file)
+    code = read_code(instructions)
+    with open(input_file, "r") as file:
+        input_text : str = file.read()
+    input_token = deque(map(ord, input_text))
+    input_token.appendleft(len(input_token))
+    io_unit = IOUnit(input_token)
+    io_controller = IOController()
+    data_path = DataPath(code, 256, input_token, io_controller)
+    control_unit = ControlUnit(code, data_path)
+    out, ticks, instr_count =
 
-    if len(out) > 0:
-        print(out, "\n-------------------------------")
-    print(f"Количество инструкций: {instr_count}")
-    print(f"Количество тактов: {ticks}")
+            if len(out) > 0:
+                print(out, "\n-------------------------------")
+            print(f"Количество инструкций: {instr_count}")
+            print(f"Количество тактов: {ticks}")
 
+        with open(target, mode="rb") as f:
+            code = f.read()
 
-if __name__ == "__main__":
-    assert len(sys.argv) == 3, "Wrong arguments: machine.py <code_file> <input_file>"
-    _, code_file, input_file = sys.argv
-    main(code_file, input_file)
+        assert code == golden.out["out_code"]
+        assert stdout.getvalue() == golden.out["out_stdout"]
+        assert caplog.text == golden.out["out_log"]

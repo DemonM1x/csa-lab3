@@ -38,7 +38,6 @@ class Opcode(str, Enum):
     OVER = "over"
     JMP = "jmp"
     JZ = "jz"
-    JN = "jn"
     HLT = "hlt"
 
     def __str__(self):

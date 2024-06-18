@@ -241,7 +241,7 @@ test:
 
  Интерфейс командной строки: `translator.py <input_file> <target_file>`
 
- Реализовано в модуле: [translator](./translator/translator.py)
+ Реализовано в модуле: [translator](translator.py)
 
  Этапы трансляции (функция `translate`):
 

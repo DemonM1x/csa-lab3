@@ -10,14 +10,7 @@ class Signals:
     LATCH_ADDR_FROM_MEM = "latch addr from mem"
     LATCH_ADDR_TOS = "latch addr tos"
 
-    OPERAND_STACK = "operand stack"
-
-    STACK_PUSH = "stack push"
-    STACK_POP = "stack_pop"
-
     PC_NEXT = "pc next"
     PC_JUMP = "pc jump"
     PC_JZ = "pc jz"
-    PC_JN = "pc jn"
     PC_RS = "pc rs"
-    PC_TOS = "pc tos"

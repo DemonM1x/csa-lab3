@@ -2,7 +2,7 @@ import logging
 import sys
 from collections import deque
 
-from isa import Opcode, read_code
+from processor.isa import Opcode, read_code
 from processor.signals import Signals
 
 
@@ -102,14 +102,14 @@ class IOUnit:
             length = self._output_buffer[i]
             if 0 < length <= len(self._output_buffer):
                 for _ in range(length):
+                    i += 1
                     output.append(chr(self._output_buffer[i]))
+
             else:
                 output.append(str(self._output_buffer[i]))
             i += 1
         return "".join(output)
 
-    def get_list_output(self) -> list[int]:
-        return list(self._output_buffer)
 class IOController:
     def __init__(self) -> None:
         self._connected_units: dict[int, IOUnit] = {}
@@ -161,11 +161,7 @@ class ControlUnit:
                 self.pc = self.data_path.data_stack[-1]
             else:
                 self.pc += 1
-        if signal == Signals.PC_JN:
-            if self.data_path.tos < 0:
-                self.pc = self.data_path.data_stack[-1]
-            else:
-                self.pc += 1
+
         if signal == Signals.PC_RS:
             if len(self.return_stack) == 0:
                 raise Exception("Empty return stack")
@@ -193,16 +189,6 @@ class ControlUnit:
 
         if opcode is Opcode.JZ:
             self.signal_latch_program_counter(Signals.PC_JZ)
-            self.tick()
-            self.data_path.signal_stack_pop()
-            self.tick()
-            self.data_path.signal_latch_tos(Signals.LATCH_TOS_FROM_STACK)
-            self.tick()
-            self.data_path.signal_stack_pop()
-            self.tick()
-            return True
-        if opcode is Opcode.JN:
-            self.signal_latch_program_counter(Signals.PC_JN)
             self.tick()
             self.data_path.signal_stack_pop()
             self.tick()

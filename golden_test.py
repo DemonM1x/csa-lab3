@@ -3,34 +3,44 @@ import io
 import logging
 import os
 import tempfile
+
 import pytest
 
-import simulation
+from processor import machine
 import translator
 
 
 @pytest.mark.golden_test("golden_tests/*_golden.yml")
-def test_golden(golden, caplog):
+def test_translator_and_machine(golden, caplog):
+
+    # Установим уровень отладочного вывода на DEBUG
     caplog.set_level(logging.DEBUG)
 
+    # Создаём временную папку для тестирования приложения.
     with tempfile.TemporaryDirectory() as tmpdirname:
-        source = os.path.join(tmpdirname, "source.fr")
-        input_file = os.path.join(tmpdirname, "input.txt")
+        # Готовим имена файлов для входных и выходных данных.
+        source = os.path.join(tmpdirname, "source.asm")
+        input_stream = os.path.join(tmpdirname, "input.txt")
         target = os.path.join(tmpdirname, "target.json")
 
+        # Записываем входные данные в файлы. Данные берутся из теста.
         with open(source, "w", encoding="utf-8") as file:
-            file.write(golden["source"])
-        with open(input_file, "w", encoding="utf-8") as file:
-            file.write(golden["input"])
+            file.write(golden["in_source"])
+        with open(input_stream, "w", encoding="utf-8") as file:
+            file.write(golden["in_stdin"])
 
-        translator.main(source, target)
-        with open(target, "r", encoding="utf-8") as file:
-            code = file.read()
-            assert code == golden["machine"]
-
+        # Запускаем транслятор и собираем весь стандартный вывод в переменную
+        # stdout
         with contextlib.redirect_stdout(io.StringIO()) as stdout:
-            simulation.main(target, input_file)
-            assert stdout.getvalue() == golden["output"]
+            translator.main(source, target)
+            print("============================================================")
+            machine.main(target, input_stream)
 
-        proc_log = caplog.text.replace("\x00", " ")
-        assert proc_log == golden["out_log"]
+        # Выходные данные также считываем в переменные.
+        with open(target, encoding="utf-8") as file:
+            code = file.read()
+
+        # Проверяем, что ожидания соответствуют реальности.
+        assert code == golden.out["out_code"]
+        assert stdout.getvalue() == golden.out["out_stdout"]
+        assert caplog.text == golden.out["out_log"]

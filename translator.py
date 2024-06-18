@@ -2,19 +2,11 @@ from __future__ import annotations
 
 import json
 import sys
-import utility
 from processor.isa import Opcode, Term
+from utility import *
 
-MIN_INT = -(2**31)
-MAX_INT = 2**31 - 1
-def arithmetic_symbol_to_opcode(symbol):
-    return {
-        "+": Opcode.ADD,
-        "-": Opcode.SUB,
-        "*": Opcode.MUL,
-        "/": Opcode.DIV,
-        "%": Opcode.MOD,
-    }.get(symbol)
+MIN_INT = -(2 ** 31)
+MAX_INT = 2 ** 31 - 1
 
 
 def meaningful_token(line: str) -> str:
@@ -45,22 +37,24 @@ def translate_part1(text):
             label = token[:-1]
             labels[label.lower()] = pc
 
-        elif utility.is_variable(token):
+        elif is_variable(token):
             if data_mode:
                 name, value = map(lambda s: s.strip(), token.split(":", maxsplit=1))
-                if utility.is_str(value):
+                if is_str(value):
                     pstr = [len(value) - 2] + [ord(c) for c in value[1:-1]]
                     labels[name.lower()] = pc
-                    instructions.append({"index": pc, "data": name, "arg": pstr[0], "term": Term(line_num, 0, name + ": " + value[1:-1])})
+                    instructions.append({"index": pc, "data": name, "arg": pstr[0],
+                                         "term": Term(line_num, 0, name + ": " + value[1:-1])})
                     value = value[:-1]
                     for i in range(1, len(value)):
                         pc = len(instructions)
                         instructions.append({"index": pc, "arg": pstr[i], "term": Term(line_num, 0, value[i])})
-                elif utility.is_int(value):
+                elif is_int(value):
                     if MIN_INT <= int(value) <= MAX_INT:
                         labels[name.lower()] = pc
-                        instructions.append({"index": pc, "data": name, "arg": int(value), "term": Term(line_num, 0, token)})
-                elif utility.is_bf(value):
+                        instructions.append(
+                            {"index": pc, "data": name, "arg": int(value), "term": Term(line_num, 0, token)})
+                elif is_bf(value):
                     _, size = value.split(maxsplit=1)
                     if int(size) > 0:
                         labels[name.lower()] = pc
@@ -108,7 +102,9 @@ def write_code(instruction_code, target):
 
 
 def main(source, target):
-    labels, instructions = translate_part1(source)
+    with open(source, "r", encoding="utf-8") as file:
+        code = file.read()
+    labels, instructions = translate_part1(code)
     instruction_code = translate_part2(labels, instructions)
     write_code(instruction_code, target)
 
@@ -116,6 +112,6 @@ def main(source, target):
 if __name__ == '__main__':
     assert len(sys.argv) == 3, "Wrong arguments: translator.py <input_file> <target_file>"
     _, source, target = sys.argv
-    with open(source, "r", encoding="utf-8") as file:
-        code = file.read()
-        main(code, target)
+    main(source, target)
+
+
