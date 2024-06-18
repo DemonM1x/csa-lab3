@@ -19,6 +19,7 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           pip3 install poetry
+          poetry cache clear . --all
           poetry install
 
       - name: Run tests and collect coverage
@@ -53,4 +54,3 @@ jobs:
       - name: Run Ruff linters
         run: |
           poetry run ruff check .
-
