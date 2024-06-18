@@ -340,7 +340,7 @@ poetry run pytest . -v --update-goldens
 
 ### CI
 
-CI при помощи Github Actions настроен в [файле ci.yml](.github/.workflows/ci.yml)
+CI при помощи Github Actions настроен в [файле ci.yml](.github/workflows/ci.yml)
 
 ``` yaml
 name: csa-lab3
