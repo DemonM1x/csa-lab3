@@ -2,10 +2,6 @@ name: csa-lab3
 
 on: push
 
-defaults:
-  run:
-    working-directory: ./
-
 jobs:
   test:
     runs-on: ubuntu-latest
