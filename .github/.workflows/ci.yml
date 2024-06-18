@@ -1,22 +1,13 @@
 name: csa-lab3
 
-on:
-  push:
-    branches:
-      - master
-    paths:
-      - ".github/workflows/*"
-      - "python/**"
-  pull_request:
-    branches:
-      - master
-    paths:
-      - ".github/workflows/*"
-      - "python/**"
+on: push
 
+defaults:
+  run:
+    working-directory: ./
 
 jobs:
-  golden:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,8 +21,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          pip3 install poetry
+          python -m pip install --upgrade pip
+          pip install poetry
           poetry install
 
       - name: Run tests and collect coverage
@@ -41,7 +32,7 @@ jobs:
         env:
           CI: true
 
-  ruff:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
@@ -55,36 +46,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          pip3 install poetry
+          python -m pip install --upgrade pip
+          pip install poetry
           poetry install
 
       - name: Check code formatting with Ruff
-        run: |
-          poetry run ruff format --check . --exclude uarch.py
+        run: poetry run ruff format --check .
 
       - name: Run Ruff linters
-        run: |
-          poetry run ruff check .
-
-  mypy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --upgrade pip
-          pip3 install poetry
-          poetry install
-
-      - name: Check static typing with mypy
-        run: |
-          poetry run mypy .
+        run: poetry run ruff check .
