@@ -266,7 +266,7 @@ class ControlUnit:
         elif opcode is Opcode.PUSH:
             self.data_path.signal_stack_push()
             self.tick()
-            self.data_path.signal_latch_address(Signals.LATCH_ADDR_FROM_MEM)
+            self.data_path.signal_latch_address(Signals.LATCH_ADDR_PC)
             self.tick()
             self.data_path.signal_latch_tos(Signals.LATCH_TOS_MEM_OUT)
             self.signal_latch_program_counter(Signals.PC_NEXT)
