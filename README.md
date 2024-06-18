@@ -1,6 +1,6 @@
 # Архитектура компьютера. Лабораторная работа №3
 - Подольский Вячеслав Ильич, P3220
-- asm| stack | neum | hw | instr | stuct | stream | port | pstr | prob1 
+- asm | stack | neum | hw | instr | struct | stream | port | pstr | prob1 
 - Упрощенный вариант
 
 
@@ -508,7 +508,7 @@ golden_test.py::test_translator_and_machine[golden_tests/prob1_golden.yml] PASSE
 ## Статистика
 
 ```
-|     ФИО         | алг            | LoC | code инстр. | инстр. | такт.  |
+| ФИО             | алг            | LoC | code инстр. | инстр. | такт.  |
 +-----------------+----------------+-----+-------------+--------+--------+
 | Подольский В.И. | hello_world    | 36  | 44          | 205    | 600    |
 | Подольский В.И. | cat            | 33  | 28          | 180    | 498    |
