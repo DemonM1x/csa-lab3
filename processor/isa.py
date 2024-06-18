@@ -14,9 +14,6 @@ class Opcode(str, Enum):
     INC = "inc"
     DEC = "dec"
 
-    AND = "and"
-    OR = "or"
-    XOR = "xor"
 
     LOAD = "load"
     STORE = "store"
@@ -28,8 +25,6 @@ class Opcode(str, Enum):
     IN = "in"
     OUT = "out"
 
-    WORD = "word"
-    BUF = "buf"
     CALL = "call"
     RET = "ret"
 
