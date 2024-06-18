@@ -1,4 +1,3 @@
-
 data:
     port: 1
     hello: "Hello, world!"

@@ -315,13 +315,204 @@ test:
 ## Тестирование
 
 Тестирование выполняется при помощи golden test-ов.
-Настройки golden тестирования находятся в [golden_test.py](golden_test.py)
+
+Настройки golden тестирования находятся в [golden_test.py](golden_test.py).
+
 Конфигурация golden test-ов лежит в [golden_tests](golden_tests)
 
 Тестовое покрытие:
 
-cat – повторяет поток ввода на вывод
-hello_world – печатает на выход “Hello, world!”
-hello_username – печатает на выход приветствие пользователя
-prob1 – сумма чисел от 1 до 1000, кратные 3 либо 5.
+- `cat` – повторяет поток ввода на вывод
+- `hello_world` – печатает на выход “Hello, world!”
+- `hello_username` – печатает на выход приветствие пользователя
+- `prob1` – сумма чисел от 1 до 1000, кратные 3 либо 5.
+
+Запустить тесты: 
+```shell
+poetry run pytest . -v
+```
+
+Обновить конфигурацию golden-тестов: 
+```shell
+poetry run pytest . -v --update-goldens
+```
+
+### CI
+
+CI при помощи Github Actions настроен в [файле ci.yml](.github/.workflows/ci.yml)
+
+``` yaml
+name: csa-lab3
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/*"
+      - "python/**"
+  pull_request:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/*"
+      - "python/**"
+
+
+jobs:
+  golden:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install poetry
+          poetry install
+
+      - name: Run tests and collect coverage
+        run: |
+          poetry run coverage run -m pytest .
+          poetry run coverage report -m
+        env:
+          CI: true
+
+  ruff:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install poetry
+          poetry install
+
+      - name: Check code formatting with Ruff
+        run: |
+          poetry run ruff format --check . --exclude uarch.py
+
+      - name: Run Ruff linters
+        run: |
+          poetry run ruff check .
+
+  mypy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install poetry
+          poetry install
+
+      - name: Check static typing with mypy
+        run: |
+          poetry run mypy .
+```
+
+Использованы следующие команды:
+
+- `poetry` - управления зависимостями Python;
+- `coverage` - формирование отчёта об уровне покрытия исходного кода;
+- `pytest` - программа для запуска тестов;
+- `ruff` - линтер и форматтер;
+- `mypy` - проверка статической типизации
+
+Тестовые процессы:
+
+- `golden` - запуск golden-тестов
+- `ruff` - запуск линтера и проверки форматирования `ruff`
+- `mypy` - запуск проверки статической типизации `mypy`
+
+## Пример использования
+
+Пример алгоритма [cat.asm](asm_programs/cat.asm)
+- Ввод: `Hello, world!`
+
+- Вывод:
+``` commandline
+DEBUG:root:TICK:   0 PC:   0 ADDR:   0 MEM_OUT: 3 DS: [] TOS: 0 	push 3  ('push start'@1:0)
+DEBUG:root:TICK:   3 PC:   1 ADDR:   0 MEM_OUT: 3 DS: [0] TOS: 3 	jmp  ('jmp'@1:0)
+DEBUG:root:TICK:   6 PC:   3 ADDR:   0 MEM_OUT: 3 DS: [] TOS: 0 	push 2  ('push port'@3:0)
+DEBUG:root:TICK:   9 PC:   4 ADDR:   3 MEM_OUT: 2 DS: [0] TOS: 2 	load  ('load'@4:0)
+DEBUG:root:TICK:  11 PC:   5 ADDR:   2 MEM_OUT: 1 DS: [0] TOS: 1 	in  ('in'@5:0)
+DEBUG:root:TICK:  12 PC:   6 ADDR:   2 MEM_OUT: 1 DS: [0] TOS: 13 	dup  ('dup'@6:0)
+DEBUG:root:TICK:  14 PC:   7 ADDR:   2 MEM_OUT: 1 DS: [0, 13] TOS: 13 	push 2  ('push port'@7:0)
+DEBUG:root:TICK:  17 PC:   8 ADDR:   7 MEM_OUT: 2 DS: [0, 13, 13] TOS: 2 	load  ('load'@8:0)
+DEBUG:root:TICK:  19 PC:   9 ADDR:   2 MEM_OUT: 1 DS: [0, 13, 13] TOS: 1 	out  ('out'@9:0)
+DEBUG:root:Output: writing 13 on port 1
+DEBUG:root:TICK:  23 PC:  10 ADDR:   2 MEM_OUT: 1 DS: [0] TOS: 13 	dup  ('dup'@10:0)
+DEBUG:root:TICK:  25 PC:  11 ADDR:   2 MEM_OUT: 1 DS: [0, 13] TOS: 13 	push 27  ('push    break'@11:0)
+DEBUG:root:TICK:  28 PC:  12 ADDR:  11 MEM_OUT: 27 DS: [0, 13, 13] TOS: 27 	swap  ('swap'@12:0)
+DEBUG:root:TICK:  32 PC:  13 ADDR:  11 MEM_OUT: 27 DS: [0, 13, 27] TOS: 13 	jz  ('jz'@13:0)
+DEBUG:root:TICK:  36 PC:  14 ADDR:  11 MEM_OUT: 27 DS: [0] TOS: 13 	push 2  ('push port'@15:0)
+DEBUG:root:TICK:  39 PC:  15 ADDR:  14 MEM_OUT: 2 DS: [0, 13] TOS: 2 	load  ('load'@16:0)
+DEBUG:root:TICK:  41 PC:  16 ADDR:   2 MEM_OUT: 1 DS: [0, 13] TOS: 1 	in  ('in'@17:0)
+DEBUG:root:TICK:  42 PC:  17 ADDR:   2 MEM_OUT: 1 DS: [0, 13] TOS: 72 	push 2  ('push port'@18:0)
+DEBUG:root:TICK:  45 PC:  18 ADDR:  17 MEM_OUT: 2 DS: [0, 13, 72] TOS: 2 	load  ('load'@19:0)
+DEBUG:root:TICK:  47 PC:  19 ADDR:   2 MEM_OUT: 1 DS: [0, 13, 72] TOS: 1 	out  ('out'@20:0)
+DEBUG:root:Output: writing `H` (72) on port 1
+
+...
+
+INFO:root:output_buffer: 'Hello, world!'
+Hello, world!
+instr_counter:  180 ticks: 498
+```
+
+## Пример тестирования исходного кода
+``` commandline
+ poetry run pytest . -v                 
+C:\Users\slava\AppData\Local\Programs\Python\Python39\lib\site-packages\pytest_golden\plugin.py:53: GoldenTestUsageWarning: Add 'enable_assertion_pass_hook=true' to pytest.ini for safer usage of pytest-golden.
+  warnings.warn(
+================================================================================= test session starts ================================================================================= 
+platform win32 -- Python 3.9.13, pytest-8.2.2, pluggy-1.5.0 -- C:\Users\slava\AppData\Local\Programs\Python\Python39\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\slava\PycharmProjects\csa-lab3
+configfile: pyproject.toml
+plugins: golden-0.2.2
+collected 4 items                                                                                                                                                                      
+
+golden_test.py::test_translator_and_machine[golden_tests/cat_golden.yml] PASSED                                                                                                  [ 25%]
+golden_test.py::test_translator_and_machine[golden_tests/hello_golden.yml] PASSED                                                                                                [ 50%]
+golden_test.py::test_translator_and_machine[golden_tests/hello_username_golden.yml] PASSED                                                                                       [ 75%]
+golden_test.py::test_translator_and_machine[golden_tests/prob1_golden.yml] PASSED                                                                                                [100%]
+
+================================================================================== 4 passed in 2.36s ================================================================================== 
+```
+
+## Статистика
+
+```
+|     ФИО         | алг            | LoC | code инстр. | инстр. | такт.  |
++-----------------+----------------+-----+-------------+--------+--------+
+| Подольский В.И. | hello_world    | 36  | 44          | 205    | 600    |
+| Подольский В.И. | cat            | 33  | 28          | 180    | 498    |
+| Подольский В.И. | hello_username | 99  | 139         | 725    | 2133   |
+| Подольский В.И. | prob1          | 47  | 39          | 20859  | 63174  |
+```
 
