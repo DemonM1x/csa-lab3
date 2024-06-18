@@ -16,7 +16,6 @@ class DataPath:
         self.data_memory_out = 0
         self.buffer_register = 0
         self.alu_out = 0
-        self.arg_tos = 0
         self.arg_address = 0
         self.pc = 0
         self.input_tokens = input_tokens
@@ -42,11 +41,9 @@ class DataPath:
 
     def signal_latch_tos(self, signal):
         buses = {
-            Signals.LATCH_TOS_ARG: self.arg_tos,
             Signals.LATCH_TOS_MEM_OUT: self.memory_read(),
             Signals.LATCH_TOS_FROM_ALU: self.alu_out,
             Signals.LATCH_TOS_FROM_STACK: self.data_stack[-1] if self.data_stack != [] else 0,
-            Signals.LATCH_TOS_FROM_PC: self.pc,
             Signals.LATCH_TOS_INPUT: self.input_token,
             Signals.LATCH_TOS_BR: self.buffer_register
         }
