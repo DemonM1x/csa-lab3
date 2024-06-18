@@ -241,7 +241,7 @@ class ControlUnit:
         }:
             self.data_path.alu(opcode)
             self.tick()
-            if not (opcode in {Opcode.INC, Opcode.DEC}):
+            if opcode not in {Opcode.INC, Opcode.DEC}:
                 self.data_path.signal_stack_pop()
                 self.tick()
             self.data_path.signal_latch_tos(Signals.LATCH_TOS_FROM_ALU)
