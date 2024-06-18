@@ -1,5 +1,6 @@
 import re
 
+
 def is_variable(value):
     return bool(
         re.fullmatch(
@@ -19,4 +20,3 @@ def is_int(value):
 
 def is_bf(value):
     return bool(re.fullmatch(r"^[bB][fF]\s+\d+$", value))
-
