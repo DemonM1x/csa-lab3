@@ -34,8 +34,10 @@ class DataPath:
 
     def signal_stack_clear(self):
         self.data_stack.clear()
+
     def latch_buffer_register(self):
         self.buffer_register = self.data_stack[-1]
+
     def signal_latch_address(self, signal: Signals):
         self.address_reg = self.tos if signal == Signals.LATCH_ADDR_TOS else self.pc
 
@@ -43,9 +45,11 @@ class DataPath:
         buses = {
             Signals.LATCH_TOS_MEM_OUT: self.memory_read(),
             Signals.LATCH_TOS_FROM_ALU: self.alu_out,
-            Signals.LATCH_TOS_FROM_STACK: self.data_stack[-1] if self.data_stack != [] else 0,
+            Signals.LATCH_TOS_FROM_STACK: self.data_stack[-1]
+            if self.data_stack != []
+            else 0,
             Signals.LATCH_TOS_INPUT: self.input_token,
-            Signals.LATCH_TOS_BR: self.buffer_register
+            Signals.LATCH_TOS_BR: self.buffer_register,
         }
         self.tos = buses[signal]
 
@@ -53,9 +57,12 @@ class DataPath:
         return int(self.data_memory[self.address_reg]["arg"])
 
     def memory_write(self):
-        self.data_memory[self.address_reg] = {"index": self.tos, "arg": self.data_stack[-1]}
-    def port_mapping_io(self, code):
+        self.data_memory[self.address_reg] = {
+            "index": self.tos,
+            "arg": self.data_stack[-1],
+        }
 
+    def port_mapping_io(self, code):
         if code == Opcode.IN.value:
             self.input_token = self._io_controller.read(self.tos)
         elif code == Opcode.OUT.value:
@@ -67,7 +74,9 @@ class DataPath:
     def alu(self, operation=Opcode.ADD):
         self.alu_out = self.tos
         if operation in [Opcode.INC, Opcode.DEC]:
-            self.alu_out = self.alu_out + 1 if operation == Opcode.INC else self.alu_out - 1
+            self.alu_out = (
+                self.alu_out + 1 if operation == Opcode.INC else self.alu_out - 1
+            )
         else:
             oper = int(self.data_stack[-1]) if self.data_stack != [] else 0
             operations = {
@@ -81,6 +90,8 @@ class DataPath:
 
     def zero(self):
         return self.tos == 0
+
+
 class IOUnit:
     def __init__(self, input_buffer: deque[int]):
         self._input_buffer: deque[int] = input_buffer
@@ -107,6 +118,7 @@ class IOUnit:
             i += 1
         return "".join(output)
 
+
 class IOController:
     def __init__(self) -> None:
         self._connected_units: dict[int, IOUnit] = {}
@@ -132,6 +144,8 @@ class IOController:
                 "Output: writing `%s` (%d) on port %d", chr(value), value, port
             )
         self._connected_units[port].write(value)
+
+
 class ControlUnit:
     def __init__(self, instructions, data_path: DataPath):
         self.instructions = data_path.data_memory
@@ -145,8 +159,6 @@ class ControlUnit:
     def tick(self):
         """Продвинуть модельное время процессора вперёд на один такт."""
         self._tick += 1
-
-
 
     def current_tick(self):
         """Текущее модельное время процессора (в тактах)."""
@@ -212,17 +224,24 @@ class ControlUnit:
             return True
         return False
 
-
     def decode_and_execute_instruction(self):
         instr = self.instructions[self.pc]
         opcode = instr["opcode"]
         if self.execute_control_flow_instruction(opcode):
             return
 
-        elif opcode in {Opcode.INC, Opcode.DEC, Opcode.ADD, Opcode.SUB, Opcode.MUL, Opcode.DIV, Opcode.MOD}:
+        elif opcode in {
+            Opcode.INC,
+            Opcode.DEC,
+            Opcode.ADD,
+            Opcode.SUB,
+            Opcode.MUL,
+            Opcode.DIV,
+            Opcode.MOD,
+        }:
             self.data_path.alu(opcode)
             self.tick()
-            if not(opcode in {Opcode.INC, Opcode.DEC}):
+            if not (opcode in {Opcode.INC, Opcode.DEC}):
                 self.data_path.signal_stack_pop()
                 self.tick()
             self.data_path.signal_latch_tos(Signals.LATCH_TOS_FROM_ALU)
@@ -331,7 +350,7 @@ class ControlUnit:
             self.data_path.address_reg,
             self.data_path.data_memory[self.data_path.address_reg]["arg"],
             self.data_path.data_stack,
-            self.data_path.tos
+            self.data_path.tos,
         )
         instr = self.instructions[self.pc]
         opcode = instr["opcode"]
@@ -389,12 +408,11 @@ def main(code_file, input_file):
     """
     code = read_code(code_file)
     input_token = deque()
-    if not(input_file == ""):
+    if not (input_file == ""):
         with open(input_file, encoding="utf-8") as file:
             input_text = file.read()
         input_token = deque(map(ord, input_text))
         input_token.appendleft(len(input_token))
-
 
     output, instr_counter, ticks = simulation(
         code,

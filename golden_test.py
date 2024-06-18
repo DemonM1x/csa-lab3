@@ -12,7 +12,6 @@ import translator
 
 @pytest.mark.golden_test("golden_tests/*_golden.yml")
 def test_translator_and_machine(golden, caplog):
-
     # Установим уровень отладочного вывода на DEBUG
     caplog.set_level(logging.DEBUG)
 

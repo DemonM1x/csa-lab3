@@ -5,6 +5,7 @@ from collections import namedtuple
 
 from enum import Enum
 
+
 class Opcode(str, Enum):
     ADD = "add"
     SUB = "sub"
@@ -13,7 +14,6 @@ class Opcode(str, Enum):
     MOD = "mod"
     INC = "inc"
     DEC = "dec"
-
 
     LOAD = "load"
     STORE = "store"
@@ -39,10 +39,7 @@ class Opcode(str, Enum):
         return str(self.value)
 
 
-
-
 def read_code(filename):
-
     with open(filename, encoding="utf-8") as file:
         code = json.loads(file.read())
 
@@ -57,11 +54,9 @@ def read_code(filename):
 
     return code
 
+
 class Term(namedtuple("Term", "line pos symbol")):
     """Описание выражения из исходного текста программы.
 
     Сделано через класс, чтобы был docstring.
     """
-
-
-
