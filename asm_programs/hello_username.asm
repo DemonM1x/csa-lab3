@@ -20,8 +20,8 @@ data:
     hlt
 
 print_char: ; (chr)
-    push port
-    load
+    push port           ; [chr, port_addr]
+    load                ; [port]
     out                 ; []
     ret
 
@@ -59,19 +59,19 @@ ps_break:
     ret
 
 read_char:  ; ()
-    push port
-    load
+    push port           ; [port_addr]
+    load                ; [port]
     in                  ; [chr]
     ret
 
 read_str:   ; (addr)
     dup                 ; [addr, addr]
-    dup
-    push    read_char   ; [addr, addr, read_char_addr]
+    dup                 ; [addr, addr, addr]
+    push    read_char   ; [addr, addr, addr, read_char_addr]
     call                ; [addr, addr, len]
     over                ; [addr, len, addr, len]
     swap                ; [addr, len, len, addr]
-    store                ; [addr, len]
+    store               ; [addr, len]
     dup                 ; [addr, len, len]
     push    rs_break    ; [addr, len, len, rs_break]
     swap                ; [addr, len, rs_break, len]
