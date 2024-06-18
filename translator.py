@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import sys
 from processor.isa import Opcode, Term
-from utility import *
+from utility import is_int, is_str, is_bf, is_variable
 
 MIN_INT = -(2**31)
 MAX_INT = 2**31 - 1
