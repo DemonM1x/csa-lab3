@@ -171,7 +171,7 @@ test:
   памяти, либо из устройств ввода/вывода.
 - Поток управления:
     Значение `PC` инкрементируется после исполнения каждой инструкции,
-    Условные (`JZ`) и безусловные (`JMP`) переходы.
+    условный (`JZ`) и безусловный (`JMP`) переходы.
 
 Набор инструкций:
 
@@ -188,7 +188,7 @@ test:
   - `jz`  - если элемент равен 0,
   начать исполнять инструкции по указанному адресу.
   - `call`  - начать исполнение процедуры по указанному адресу.
-  - `ret`  - вернуться из процедуры в основную программу, на следующий адрес.
+  - `ret`  - вернуться из процедуры в основную программу на следующий адрес.
 
   - `hlt` - остановка тактового генератора.
 
@@ -205,7 +205,7 @@ test:
 - `OVER { e1 } [ e2 ]` – дублировать первый элемент на стеке через второй.
   Если в стеке только 1 элемент – поведение не определено.
 - `in { port }`  - получить данные из внешнего устройства по указанному порту.
-- `out { port, value }` - отправить данные во внешнее устройство по указанному порту.
+- `out { value, port }` - отправить данные во внешнее устройство по указанному порту.
 
  ## Кодирование инструкций
 
@@ -276,9 +276,6 @@ test:
 - `LATCH_AR`
   - `LATCH_ADDR_PC` - защелкнуть значение из счетчика команд
   - `LATCH_ADDR_TOS` - защелкнуть значение из вершины стека
-- `WRITE` - записать в память по адресу из AR второй элемент стека данных
-- `OUT` - отправить второй элемент стека данных на внешнее устройство по порту,
-указанному в вершине стека данных
 
 Флаги:
 - `zero (z)` - проверка вершины стека на ноль
@@ -344,20 +341,7 @@ CI при помощи Github Actions настроен в [файле ci.yml](.g
 ``` yaml
 name: csa-lab3
 
-on:
-  push:
-    branches:
-      - master
-    paths:
-      - ".github/workflows/*"
-      - "python/**"
-  pull_request:
-    branches:
-      - master
-    paths:
-      - ".github/workflows/*"
-      - "python/**"
-
+on: push
 
 jobs:
   golden:
@@ -376,6 +360,7 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           pip3 install poetry
+          poetry cache clear . --all
           poetry install
 
       - name: Run tests and collect coverage
@@ -405,33 +390,12 @@ jobs:
 
       - name: Check code formatting with Ruff
         run: |
-          poetry run ruff format --check . --exclude uarch.py
+          poetry run ruff format --check . --exclude processor/signals.py
 
       - name: Run Ruff linters
         run: |
           poetry run ruff check .
 
-  mypy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-
-      - name: Install dependencies
-        run: |
-          python3 -m pip install --upgrade pip
-          pip3 install poetry
-          poetry install
-
-      - name: Check static typing with mypy
-        run: |
-          poetry run mypy .
 ```
 
 Использованы следующие команды:
@@ -440,13 +404,11 @@ jobs:
 - `coverage` - формирование отчёта об уровне покрытия исходного кода;
 - `pytest` - программа для запуска тестов;
 - `ruff` - линтер и форматтер;
-- `mypy` - проверка статической типизации
 
 Тестовые процессы:
 
 - `golden` - запуск golden-тестов
 - `ruff` - запуск линтера и проверки форматирования `ruff`
-- `mypy` - запуск проверки статической типизации `mypy`
 
 ## Пример использования
 
