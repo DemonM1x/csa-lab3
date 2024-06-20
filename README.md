@@ -22,7 +22,7 @@
 ### Синтаксис
 
 ```ebnf
-<program> ::= <section_data>? <section_code>
+<program> ::= <data>? <code>
 
 <section_data> ::= "section data:" <comment>? "\n" <data_line>*
 <data_line> ::= <variable> <comment>? "\n"
