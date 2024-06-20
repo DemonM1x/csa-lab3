@@ -7,7 +7,7 @@ from processor.signals import Signals
 
 
 class DataPath:
-    def __init__(self, code, size, input_tokens, io_controller: "IOController"):
+    def __init__(self, code, size, io_controller: "IOController"):
         self.data_stack = []
         self.tos = 0
 
@@ -18,7 +18,6 @@ class DataPath:
         self.alu_out = 0
         self.arg_address = 0
         self.pc = 0
-        self.input_tokens = input_tokens
         self.input_token = 0
         self.output_buffer = []
         self._io_controller: IOController = io_controller
@@ -380,7 +379,7 @@ def simulation(code, input_tokens, data_memory_size, limit):
     io_unit = IOUnit(input_buffer=input_tokens)
     io_controller = IOController()
     io_controller.connect(port=1, unit=io_unit)
-    data_path = DataPath(code, data_memory_size, input_tokens, io_controller)
+    data_path = DataPath(code, data_memory_size, io_controller)
     control_unit = ControlUnit(code, data_path)
     instr_counter = 0
 
